@@ -1,4 +1,5 @@
 import Formulas from '../../../../../info/formulas';
+import { getXPMultiplier } from '../../../../../premium/premium';
 
 import { Modules } from '@kaetram/common/network';
 
@@ -59,16 +60,19 @@ export default abstract class Skill {
      * @param withInfo Whether to disable the experience info.
      */
 
-    public addExperience(experience: number, withInfo = true): void {
+    public addExperience(experience: number, withInfo = true, playerRank = Modules.Ranks.None): void {
         let previousLevel = this.level;
 
-        this.setExperience(this.experience + experience);
+        // Apply premium XP multiplier (150% for premium accounts)
+        let adjustedXP = Math.floor(experience * getXPMultiplier(playerRank));
+
+        this.setExperience(this.experience + adjustedXP);
 
         this.experienceCallback?.(
             this.type,
             this.name,
             withInfo,
-            experience,
+            adjustedXP,
             this.level,
             this.level !== previousLevel
         );
