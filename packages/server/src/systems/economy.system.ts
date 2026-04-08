@@ -7,7 +7,6 @@ interface ItemPriceInfo {
 
 const itemPriceMap: Record<string, ItemPriceInfo> = {};
 
-// Pre-process items to get base prices and categories
 for (const key in itemData) {
     const item = (itemData as any)[key];
     itemPriceMap[key] = {
@@ -17,42 +16,59 @@ for (const key in itemData) {
 }
 
 /**
- * Computes the dynamic price of an item based on world heuristics.
- * H0: War, H1: Peace, H2: Trade, H3: Chaos, H4: Order, H5: Nature, H6: Magic, H7: Tech
+ * Computes the dynamic price of an item based on world heuristic values.
+ * @param itemKey The item key to compute price for.
+ * @param isSellingOrNodes Boolean (legacy) or array of 13 heuristic values.
+ * @param isSelling Whether the player is selling (vs buying).
  */
-export function computePrice(itemKey: string, isSelling: boolean = false): number {
+export function computePrice(
+    itemKey: string,
+    isSellingOrNodes?: boolean | number[],
+    isSelling = false
+): number {
+    let heuristicNodes: number[] = new Array(13).fill(50);
+
+    // Support legacy 2-arg call: computePrice(key, isSelling)
+    if (typeof isSellingOrNodes === 'boolean') {
+        isSelling = isSellingOrNodes;
+    } else if (Array.isArray(isSellingOrNodes)) {
+        heuristicNodes = isSellingOrNodes;
+    }
     const info = itemPriceMap[itemKey];
     if (!info) return 1;
 
     let multiplier = 1.0;
 
-    // Global modifiers
-    multiplier += (([0,0,0,0,0,0,0,0])[ 2] * 0.05); // Trade increases prices (demand)
-    multiplier -= (([0,0,0,0,0,0,0,0])[ 1] * 0.03); // Peace stabilizes/lowers prices
-    multiplier += (([0,0,0,0,0,0,0,0])[ 3] * 0.10); // Chaos causes inflation
-    multiplier -= (([0,0,0,0,0,0,0,0])[ 4] * 0.05); // Order reduces inflation
+    // Normalize node values to 0-1 range
+    const trade = (heuristicNodes[3] ?? 50) / 100;
+    const peace = (heuristicNodes[8] ?? 50) / 100;     // Social → peace proxy
+    const chaos = (heuristicNodes[6] ?? 50) / 100;     // Scarcity → chaos proxy
+    const order = (heuristicNodes[9] ?? 50) / 100;     // Culture → order proxy
+    const war = (heuristicNodes[10] ?? 50) / 100;      // Politics → war proxy
+    const nature = (heuristicNodes[0] ?? 50) / 100;    // ResourceInflux → nature proxy
+    const tech = (heuristicNodes[12] ?? 50) / 100;     // Technology
 
-    // Category specific modifiers
+    multiplier += trade * 0.5;
+    multiplier -= peace * 0.3;
+    multiplier += chaos * 1.0;
+    multiplier -= order * 0.5;
+
     switch (info.category) {
         case 'weapon':
         case 'armor':
-            multiplier += (([0,0,0,0,0,0,0,0])[ 0] * 0.15); // War spikes equipment prices
+            multiplier += war * 1.5;
             break;
         case 'food':
         case 'potion':
-            multiplier += (([0,0,0,0,0,0,0,0])[ 0] * 0.10); // War increases consumable prices
-            multiplier -= (([0,0,0,0,0,0,0,0])[ 5] * 0.05); // Nature makes food cheaper
+            multiplier += war * 1.0;
+            multiplier -= nature * 0.5;
             break;
         case 'material':
-            multiplier += (([0,0,0,0,0,0,0,0])[ 7] * 0.08); // Tech increases material demand
+            multiplier += tech * 0.8;
             break;
     }
 
-    // Selling to shop usually gives less
-    if (isSelling) {
-        multiplier *= 0.5;
-    }
+    if (isSelling) multiplier *= 0.5;
 
-    const finalPrice = Math.max(1, Math.floor(info.basePrice * multiplier));
-    return finalPrice;
+    return Math.max(1, Math.floor(info.basePrice * multiplier));
 }
