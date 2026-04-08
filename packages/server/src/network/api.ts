@@ -1,4 +1,5 @@
 import createAdminRouter from '../admin/api';
+import createPremiumRouter from '../premium/api';
 
 import config from '@kaetram/common/config';
 import log from '@kaetram/common/util/log';
@@ -37,15 +38,22 @@ export default class API {
 
         app.use(express.urlencoded({ extended: true })).use(express.json());
 
-        // Mount admin panel routes with CORS for the admin UI
-        const adminRouter = createAdminRouter(world);
-        app.use('/admin', (req, res, next) => {
+        // CORS middleware for admin and premium routes
+        const corsMiddleware = (req: any, res: any, next: any) => {
             res.header('Access-Control-Allow-Origin', '*');
             res.header('Access-Control-Allow-Headers', 'Authorization, Content-Type');
             res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
             if (req.method === 'OPTIONS') { res.sendStatus(200); return; }
             next();
-        }, adminRouter);
+        };
+
+        // Mount admin panel routes
+        const adminRouter = createAdminRouter(world);
+        app.use('/admin', corsMiddleware, adminRouter);
+
+        // Mount premium/PayPal routes
+        const premiumRouter = createPremiumRouter(world);
+        app.use('/premium', corsMiddleware, premiumRouter);
 
         router = express.Router();
         this.handleRouter(router);

@@ -340,7 +340,8 @@ export enum Ranks {
     TierSix,
     TierSeven,
     HollowAdmin,
-    Booster
+    Booster,
+    Premium // PayPal premium subscribers — 150% XP, housing, custom textures
 }
 
 export let RankColours = {
@@ -359,7 +360,8 @@ export let RankColours = {
     [Ranks.TierSix]: '#77e691',
     [Ranks.TierSeven]: '#77e691',
     [Ranks.HollowAdmin]: '#3bbaff',
-    [Ranks.Booster]: '#f47fff'
+    [Ranks.Booster]: '#f47fff',
+    [Ranks.Premium]: '#ffd700'
 };
 
 export let RankTitles = {
@@ -378,7 +380,8 @@ export let RankTitles = {
     [Ranks.TierSix]: 'T6 Patron',
     [Ranks.TierSeven]: 'T7 Patron',
     [Ranks.HollowAdmin]: 'Admin',
-    [Ranks.Booster]: 'Booster'
+    [Ranks.Booster]: 'Booster',
+    [Ranks.Premium]: 'Premium'
 };
 
 export interface Colours {
