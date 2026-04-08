@@ -25,3 +25,14 @@ AreAxiomian is an open-source 2D MMORPG (Yarn v4 monorepo). Key packages: `@kaet
 - Located in `packages/server/src/game/arelogic/`. The heuristic engine (13 nodes, 6 axioms, 1 watchdog) ticks every 5 seconds in the server world loop.
 - Nations, villages, social bonds, and NPC memories are seeded at server startup.
 - The narrative engine at `packages/server/src/game/narrative.engine.ts` generates probabilistic world events.
+
+### PayPal Premium System
+- Located in `packages/server/src/premium/`. Requires env vars `PAYPAL_CLIENT_ID`, `PAYPAL_SECRET`, `PAYPAL_MODE` (live or sandbox).
+- These are **live** credentials — set `PAYPAL_MODE=live` for production.
+- Never commit PayPal credentials to source code. Use environment variables or Cursor secrets.
+- Premium API at `http://localhost:9002/premium/`. Price: EUR 9.99.
+- Benefits: 150% XP, housing, custom texture uploads.
+
+### Admin Panel
+- Admin API at `http://localhost:9002/admin/`. Exclusively for user "thosu".
+- Login: `POST /admin/login` with `{"username":"thosu","password":"admin2024!secure"}`.
