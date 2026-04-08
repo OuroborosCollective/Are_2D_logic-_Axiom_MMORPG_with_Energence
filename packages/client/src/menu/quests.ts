@@ -34,8 +34,17 @@ export default class Quests extends Menu {
     public handle(opcode: Opcodes.Quest, key = ''): void {
         switch (opcode) {
             case Opcodes.Quest.Batch: {
+                this.list.innerHTML = ''; // Clear the list before re-creating it.
                 for (let quest of Object.values(this.player.quests)) this.createElement(quest);
 
+                break;
+            }
+
+            case Opcodes.Quest.Update: {
+                if (key) {
+                    let quest = this.player.quests[key];
+                    if (quest) this.createElement(quest);
+                }
                 break;
             }
 

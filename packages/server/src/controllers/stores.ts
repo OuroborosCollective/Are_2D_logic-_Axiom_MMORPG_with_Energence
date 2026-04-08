@@ -1,5 +1,6 @@
 import storeData from '../../data/stores.json';
 import Item from '../game/entity/objects/item';
+import { computePrice } from '../systems/economy.system';
 
 import log from '@kaetram/common/util/log';
 import { t } from '@kaetram/common/i18n';
@@ -199,7 +200,8 @@ export default class Stores {
         }
 
         // Find total price of item by multiplying count against price.
-        let currency = player.inventory.getIndex(store.currency, item.price * count);
+        let price = computePrice(item.key),
+            currency = player.inventory.getIndex(store.currency, price * count);
 
         // If no inventory slot index with currency is found, stop the purchase.
         if (currency < 0) return player.notify('store:NOT_ENOUGH_CURRENCY');
@@ -281,7 +283,7 @@ export default class Stores {
         // Find the item in the store if it exists.
         let item = player.inventory.getItem(slot),
             storeItem = store.items.find((item) => item.key === slot.key),
-            price = storeItem?.price || item.price, // Price of the item being sold.
+            price = computePrice(slot.key, true), // Price of the item being sold.
             totalCoins = this.getTotalCost(count, price, storeItem?.count); // Amount of coins the player will be receiving.
 
         // Total amount of coins is invalid, this shouldn't technically happen.
@@ -333,7 +335,7 @@ export default class Stores {
         // Create an instance of an item and try to check if that item exists in the store.
         let item = player.inventory.getItem(slot),
             storeItem = store.items.find((item) => item.key === slot.key),
-            price = storeItem?.price || item.price, // Price of the item being sold.
+            price = computePrice(slot.key, true), // Price of the item being sold.
             totalCoins = this.getTotalCost(count, price, storeItem?.count); // Amount of coins the player will be receiving.
 
         // An invalid amount of coins was calculated, this shouldn't happen.
@@ -518,7 +520,7 @@ export default class Stores {
                 key: item.key,
                 name: item.name,
                 count: item.count,
-                price: item.price
+                price: computePrice(item.key)
             });
 
         return {

@@ -142,9 +142,11 @@ export default class Player extends Character {
      */
 
     public loadQuests(quests: QuestData[]): void {
-        for (let [i, quest] of quests.entries())
+        for (let quest of quests) {
+            let id = this.quests[quest.key]?.id ?? Object.keys(this.quests).length;
+
             this.quests[quest.key] = new Task(
-                i,
+                id,
                 quest.name!,
                 quest.description!,
                 quest.stage,
@@ -154,6 +156,7 @@ export default class Player extends Character {
                 quest.skillRequirements,
                 quest.questRequirements
             );
+        }
     }
 
     /**

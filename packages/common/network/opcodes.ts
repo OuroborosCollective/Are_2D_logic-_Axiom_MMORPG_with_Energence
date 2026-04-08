@@ -76,7 +76,8 @@ export enum Quest {
     Batch,
     Progress,
     Finish,
-    Start
+    Start,
+    Update
 }
 
 export enum Achievement {

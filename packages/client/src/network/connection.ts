@@ -176,6 +176,7 @@ export default class Connection {
         this.messages.onLootBag(this.handleLootBag.bind(this));
         this.messages.onCountdown(this.handleCountdown.bind(this));
         this.messages.onResource(this.handleResource.bind(this));
+        this.messages.onHeuristics(this.handleHeuristics.bind(this));
     }
 
     /**
@@ -830,7 +831,8 @@ export default class Connection {
 
     private handleQuest(opcode: Opcodes.Quest, info: QuestPacketData): void {
         switch (opcode) {
-            case Opcodes.Quest.Batch: {
+            case Opcodes.Quest.Batch:
+            case Opcodes.Quest.Update: {
                 this.game.player.loadQuests(info.quests!);
                 break;
             }
@@ -1603,5 +1605,9 @@ export default class Connection {
 
     private canRequestEntityList(): boolean {
         return Date.now() - this.lastEntityListRequest > 5000; // every 2 seconds
+    }
+
+    private handleHeuristics(H: number[]): void {
+        this.input.hud.updateHeuristics?.(H);
     }
 }

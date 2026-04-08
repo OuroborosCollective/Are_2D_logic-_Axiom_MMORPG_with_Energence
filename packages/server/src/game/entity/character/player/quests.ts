@@ -1,11 +1,12 @@
 import QuestIndex from './quest/impl';
+import DynamicQuest from './quest/impl/dynamic';
 
 import { Modules, Opcodes } from '@kaetram/common/network';
 import { QuestPacket } from '@kaetram/common/network/impl';
 
 import type { PointerData } from '@kaetram/common/network/impl/pointer';
 import type { PopupData } from '@kaetram/common/types/popup';
-import type { QuestData, SerializedQuest } from '@kaetram/common/network/impl/quest';
+import type { QuestData, SerializedQuest, RawQuest } from '@kaetram/common/network/impl/quest';
 import type Player from './player';
 import type Quest from './quest/quest';
 import type NPC from '../../npc/npc';
@@ -38,19 +39,44 @@ export default class Quests {
     }
 
     /**
+     * Adds a dynamic quest to the player's quest log.
+     * @param key The unique key for the dynamic quest.
+     * @param rawData The raw quest data.
+     */
+    public addDynamicQuest(key: string, rawData: RawQuest, notify = true): void {
+        if (this.quests[key]) return;
+
+        let quest = new DynamicQuest(key, rawData);
+
+        this.quests[key] = quest;
+
+        quest.onProgress(this.handleProgress.bind(this));
+        quest.onPointer(this.handlePointer.bind(this));
+        quest.onPopup(this.handlePopup.bind(this));
+        quest.onStart((key: string) => this.handleInterface(key));
+
+        // Notify the client about the new quest
+        if (notify)
+            this.player.send(
+                new QuestPacket(Opcodes.Quest.Update, { key, quests: [quest.serialize(true)] })
+            );
+    }
+
+    /**
      * Loads the quest data from the database into
      * the player's instance.
      * @param questInfo Array containing data for each quest.
      */
 
-    public load(questInfo: QuestData[]): void {
+    public load(questInfo: QuestData[] = []): void {
         for (let info of questInfo) {
             let quest = this.get(info.key);
 
-            /**
-             * If the quest exists we set the stage without creating a callback (so we don't send anything
-             * to the player upon logging in). We also load the completed sub stages into the quest.
-             */
+            // If it's a dynamic quest that hasn't been initialized yet.
+            if (!quest && info.rawData) {
+                this.addDynamicQuest(info.key, info.rawData, false);
+                quest = this.get(info.key);
+            }
 
             if (quest) {
                 quest.setStage(info.stage, info.subStage, false);

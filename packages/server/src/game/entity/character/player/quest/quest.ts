@@ -72,7 +72,7 @@ export default abstract class Quest {
 
     public constructor(
         private key: string,
-        rawData: RawQuest
+        protected rawData: RawQuest
     ) {
         this.name = rawData.name;
         this.description = rawData.description;
@@ -757,7 +757,8 @@ export default abstract class Quest {
             key: this.key,
             stage: this.stage,
             subStage: this.subStage,
-            completedSubStages: this.completedSubStages
+            completedSubStages: this.completedSubStages,
+            rawData: this.rawData
         };
 
         if (batch) {

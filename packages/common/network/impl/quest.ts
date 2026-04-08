@@ -116,6 +116,7 @@ export interface QuestData {
     rewards?: string[];
     difficulty?: string;
     stageCount?: number;
+    rawData?: RawQuest;
 }
 
 export interface QuestPacketData {
