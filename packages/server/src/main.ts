@@ -116,7 +116,7 @@ class Main {
         // Save all players
         this.world?.save();
 
-        log.info(`Shutting down Kaetram game engine.`);
+        log.info(`Shutting down AreAxiomian game engine.`);
 
         // Actually exit the process.
         setTimeout(() => exit(0), 2000);

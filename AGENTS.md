@@ -1,7 +1,7 @@
 ## Cursor Cloud specific instructions
 
 ### Project overview
-Kaetram is an open-source 2D MMORPG (Yarn v4 monorepo). Key packages: `@kaetram/server` (game server, port 9001), `@kaetram/client` (Astro dev server, port 9000), `@kaetram/hub` (optional gateway), `@kaetram/admin` (admin UI), `@kaetram/common` (shared types).
+AreAxiomian is an open-source 2D MMORPG (Yarn v4 monorepo). Key packages: `@kaetram/server` (game server, port 9001), `@kaetram/client` (Astro dev server, port 9000), `@kaetram/hub` (optional gateway), `@kaetram/admin` (admin UI), `@kaetram/common` (shared types).
 
 ### Environment setup
 - Requires Node.js 20 (use `nvm use 20`). Node 22+ is **not** compatible with the engine constraints.

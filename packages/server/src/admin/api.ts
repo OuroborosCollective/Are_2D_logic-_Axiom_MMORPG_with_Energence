@@ -117,7 +117,7 @@ export default function createAdminRouter(world: World): Router {
         const h = world.heuristics;
         res.json({
             server: {
-                name: 'Kaetram',
+                name: 'AreAxiomian',
                 uptime: process.uptime(),
                 memoryUsage: process.memoryUsage(),
                 population: world.getPopulation(),

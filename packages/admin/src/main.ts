@@ -1,5 +1,5 @@
 /**
- * Kaetram Admin Dashboard — Thosu Exclusive
+ * AreAxiomian Admin Dashboard — Thosu Exclusive
  *
  * Complete no-code admin panel with:
  * - Dashboard overview

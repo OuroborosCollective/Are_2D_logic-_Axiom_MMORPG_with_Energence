@@ -271,7 +271,7 @@ export default class API {
             // Send the email to the user.
             this.mailer.send(
                 email,
-                'Kaetram Account Password Reset',
+                'AreAxiomian Account Password Reset',
                 `Hello there, you have requested a password reset for your account. Please use the following link to reset your password: https://kaetram.com/reset/?token=${token}&id=${id}`
             );
 
