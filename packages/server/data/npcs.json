@@ -2,7 +2,7 @@
     "king": {
         "name": "King",
         "text": [
-            "Welcome to the kingdom of Kaetram!",
+            "Welcome to the kingdom of AreAxiomian!",
             "You have travelled long and far, and for that you have my respect."
         ]
     },
@@ -289,8 +289,8 @@
             "Hey there!",
             "I am the Octocat, the programmer and I",
             "are very well acquainted.",
-            "In case you did not know, Kaetram is completely open-source.",
-            "You can <a target=\"_blank\" href=\"https://github.com/Kaetram/Kaetram-Open\">check out the source on GitHub!</a>"
+            "In case you did not know, AreAxiomian is completely open-source.",
+            "You can <a target=\"_blank\" href=\"https://github.com/AreAxiomian/AreAxiomian-Open\">check out the source on GitHub!</a>"
         ]
     },
 
