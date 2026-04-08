@@ -176,7 +176,7 @@ export default class Connection {
         this.messages.onLootBag(this.handleLootBag.bind(this));
         this.messages.onCountdown(this.handleCountdown.bind(this));
         this.messages.onResource(this.handleResource.bind(this));
-        this.messages.onHeuristics(this.handleHeuristics.bind(this));
+        // this.messages.onHeuristics(this.handleHeuristics.bind(this));
     }
 
     /**
@@ -1608,6 +1608,5 @@ export default class Connection {
     }
 
     private handleHeuristics(H: number[]): void {
-        this.input.hud.updateHeuristics?.(H);
     }
 }

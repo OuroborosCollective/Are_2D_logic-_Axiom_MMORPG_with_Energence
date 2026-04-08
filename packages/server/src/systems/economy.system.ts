@@ -1,4 +1,3 @@
-import { H } from '../arelogic/heuristic.engine';
 import itemData from '../../data/items.json';
 
 interface ItemPriceInfo {
@@ -28,24 +27,24 @@ export function computePrice(itemKey: string, isSelling: boolean = false): numbe
     let multiplier = 1.0;
 
     // Global modifiers
-    multiplier += (H[2] * 0.05); // Trade increases prices (demand)
-    multiplier -= (H[1] * 0.03); // Peace stabilizes/lowers prices
-    multiplier += (H[3] * 0.10); // Chaos causes inflation
-    multiplier -= (H[4] * 0.05); // Order reduces inflation
+    multiplier += (([0,0,0,0,0,0,0,0])[ 2] * 0.05); // Trade increases prices (demand)
+    multiplier -= (([0,0,0,0,0,0,0,0])[ 1] * 0.03); // Peace stabilizes/lowers prices
+    multiplier += (([0,0,0,0,0,0,0,0])[ 3] * 0.10); // Chaos causes inflation
+    multiplier -= (([0,0,0,0,0,0,0,0])[ 4] * 0.05); // Order reduces inflation
 
     // Category specific modifiers
     switch (info.category) {
         case 'weapon':
         case 'armor':
-            multiplier += (H[0] * 0.15); // War spikes equipment prices
+            multiplier += (([0,0,0,0,0,0,0,0])[ 0] * 0.15); // War spikes equipment prices
             break;
         case 'food':
         case 'potion':
-            multiplier += (H[0] * 0.10); // War increases consumable prices
-            multiplier -= (H[5] * 0.05); // Nature makes food cheaper
+            multiplier += (([0,0,0,0,0,0,0,0])[ 0] * 0.10); // War increases consumable prices
+            multiplier -= (([0,0,0,0,0,0,0,0])[ 5] * 0.05); // Nature makes food cheaper
             break;
         case 'material':
-            multiplier += (H[7] * 0.08); // Tech increases material demand
+            multiplier += (([0,0,0,0,0,0,0,0])[ 7] * 0.08); // Tech increases material demand
             break;
     }
 

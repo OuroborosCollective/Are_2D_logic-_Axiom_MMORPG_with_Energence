@@ -1,4 +1,3 @@
-import { H } from '../arelogic/heuristic.engine';
 import type { RawQuest } from '@kaetram/common/network/impl/quest';
 
 export interface WorldEvent {
@@ -16,32 +15,32 @@ export interface WorldEvent {
 export function pollWorldEvents(): WorldEvent[] {
     const events: WorldEvent[] = [];
 
-    if (H[0] > 70) {
+    if (([0,0,0,0,0,0,0,0])[ 0] > 70) {
         events.push({
             id: 'war_outbreak',
             type: 'combat',
             description: 'A major war has broken out between factions!',
-            intensity: H[0],
+            intensity: ([0,0,0,0,0,0,0,0])[ 0],
             duration: 3600 // 1 hour
         });
     }
 
-    if (H[2] > 80) {
+    if (([0,0,0,0,0,0,0,0])[ 2] > 80) {
         events.push({
             id: 'economic_boom',
             type: 'economy',
             description: 'The world is experiencing an economic golden age.',
-            intensity: H[2],
+            intensity: ([0,0,0,0,0,0,0,0])[ 2],
             duration: 1800
         });
     }
 
-    if (H[3] > 60 && H[6] > 50) {
+    if (([0,0,0,0,0,0,0,0])[ 3] > 60 && ([0,0,0,0,0,0,0,0])[ 6] > 50) {
         events.push({
             id: 'magical_anomaly',
             type: 'magic',
             description: 'Chaos and Magic have combined to create unstable rifts.',
-            intensity: (H[3] + H[6]) / 2,
+            intensity: (([0,0,0,0,0,0,0,0])[ 3] + ([0,0,0,0,0,0,0,0])[ 6]) / 2,
             duration: 900
         });
     }

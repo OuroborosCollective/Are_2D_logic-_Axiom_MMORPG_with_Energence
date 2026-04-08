@@ -13,15 +13,12 @@ import Network from '../network/network';
 import Client from '../network/client';
 import Events from '../controllers/events';
 
-import { decideAction, executeAction } from './faction.system';
-import { updateHeuristics, H } from '../arelogic/heuristic.engine';
-import { mapActionToE } from '../arelogic/event.mapper';
 import { pollWorldEvents, generateQuestFromEvent } from './narrative.engine';
 
 import config from '@kaetram/common/config';
 import log from '@kaetram/common/util/log';
 import Discord from '@kaetram/common/api/discord';
-import { ChatPacket, GuildPacket, HeuristicsPacket } from '@kaetram/common/network/impl';
+import { ChatPacket, GuildPacket } from '@kaetram/common/network/impl';
 import { Modules, Opcodes } from '@kaetram/common/network';
 import { PacketType } from '@kaetram/common/network/modules';
 
@@ -110,15 +107,10 @@ export default class World {
             // In a real implementation, we would load factions from DB
             // For now, we simulate one faction for the demo
             const demoFaction = { id: 'demo_faction', territory: 10, resources: 100, knowledge: 5, power: 10 };
-            const action = decideAction(demoFaction, H);
-            const updated = await executeAction(demoFaction, action);
             
-            updateHeuristics(mapActionToE(action));
             
             // Broadcast heuristics to all players
-            this.network.broadcast(new HeuristicsPacket(H));
             
-            log.debug(`AI Faction ${demoFaction.id} performed action: ${action}`);
 
             // Poll for world events
             const events = pollWorldEvents();
