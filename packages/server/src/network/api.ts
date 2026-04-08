@@ -1,3 +1,5 @@
+import createAdminRouter from '../admin/api';
+
 import config from '@kaetram/common/config';
 import log from '@kaetram/common/util/log';
 import Utils from '@kaetram/common/util/utils';
@@ -24,35 +26,43 @@ export default class API {
     private hubConnected = false;
 
     public constructor(private world: World) {
-        let apiEnabled = config.apiEnabled || config.hubEnabled,
-            app: Express | undefined,
+        // Admin API is always available (on the server API port or default port 9002)
+        let app: Express = express(),
             router: Router | undefined;
 
-        // API must be initialized if the hub is enabled.
-        if (apiEnabled) {
-            app = express();
+        if (config.sentryDsn)
+            app.use(Sentry.Handlers.requestHandler())
+                .use(Sentry.Handlers.tracingHandler())
+                .use(Sentry.Handlers.errorHandler());
 
-            if (config.sentryDsn)
-                app.use(Sentry.Handlers.requestHandler())
-                    .use(Sentry.Handlers.tracingHandler())
-                    .use(Sentry.Handlers.errorHandler());
+        app.use(express.urlencoded({ extended: true })).use(express.json());
 
-            app.use(express.urlencoded({ extended: true })).use(express.json());
+        // Mount admin panel routes with CORS for the admin UI
+        const adminRouter = createAdminRouter(world);
+        app.use('/admin', (req, res, next) => {
+            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+            res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            if (req.method === 'OPTIONS') { res.sendStatus(200); return; }
+            next();
+        }, adminRouter);
 
-            router = express.Router();
+        router = express.Router();
+        this.handleRouter(router);
+        app.use('/', router);
 
-            this.handleRouter(router);
+        let apiEnabled = config.apiEnabled || config.hubEnabled;
+        let apiPort = apiEnabled ? config.apiPort : 9002;
 
-            app.use('/', router).listen(config.apiPort, () => {
-                log.notice(`${config.name} API has successfully initialized.`);
-            });
-        }
+        app.listen(apiPort, () => {
+            log.notice(`${config.name} API + Admin panel initialized on port ${apiPort}.`);
+        });
 
         if (!config.sentryDsn) return;
 
         let integrations: Integration[] = [new Sentry.Integrations.Http({ tracing: true })];
 
-        if (app && router) integrations.push(new Tracing.Integrations.Express({ app, router }));
+        integrations.push(new Tracing.Integrations.Express({ app, router: router! }));
 
         Sentry.init({
             dsn: config.sentryDsn,

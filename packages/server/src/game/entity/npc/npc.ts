@@ -3,13 +3,15 @@ import Entity from '../entity';
 
 import log from '@kaetram/common/util/log';
 import Utils from '@kaetram/common/util/utils';
-import { NPCPacket } from '@kaetram/common/network/impl';
+import { NPCPacket, ChatPacket } from '@kaetram/common/network/impl';
 import { Modules, Opcodes } from '@kaetram/common/network';
 import { SpecialEntityTypes } from '@kaetram/common/network/modules';
 
 import type Player from '../character/player/player';
 import type { NPCData } from '@kaetram/common/network/impl/npc';
 import type { EntityDisplayInfo } from '@kaetram/common/types/entity';
+import type NPCMemory from '../../../game/arelogic/npc-memory';
+import type { NPCClass } from '../../../game/arelogic/npc-classes';
 
 interface RawNPCData {
     [key: string]: NPCData;
@@ -24,6 +26,9 @@ export default class NPC extends Entity {
 
     public role?: string;
     public store = '';
+
+    /** Heuristic NPC class — assigned dynamically by the world. */
+    public heuristicClass?: NPCClass;
 
     public constructor(key: string, x: number, y: number) {
         super(Utils.createInstance(Modules.EntityType.NPC), key, x, y);
@@ -43,15 +48,48 @@ export default class NPC extends Entity {
     }
 
     /**
-     * Talks to an NPC and progresses the talking index of the player. It returns
-     * the message the NPC is currently saying.
+     * Talks to an NPC and progresses the talking index of the player.
+     * If the NPC has a memory engine attached (via World), it will
+     * generate heuristic-aware dialogue alongside the static text.
      * @param player The player to grab/compare talk index of.
      * @param text Optional parameter that uses default text in `npcs.json` if not specified.
-     * @returns String of the current massage.
      */
 
     public talk(player?: Player, text = this.text): void {
-        if (!(player && this.hasDialogue(text))) return;
+        if (!player) return;
+
+        // Record this interaction in the NPC's memory
+        const world = player.world;
+        if (world) {
+            const memory = world.getNPCMemory(this.instance, this.name);
+            memory.remember({
+                playerId: player.instance,
+                playerName: player.username,
+                event: 'talk',
+                detail: `${player.username} spoke to ${this.name}`,
+                sentiment: 0.1,
+                strength: 0.8
+            });
+
+            // Generate heuristic-aware dialogue if no static text remains
+            if (!this.hasDialogue(text) || (player.talkIndex >= text.length)) {
+                const heuristicMsg = memory.generateDialogue(
+                    player.instance,
+                    player.username,
+                    world.heuristics
+                );
+                player.send(
+                    new NPCPacket(Opcodes.NPC.Talk, {
+                        instance: this.instance,
+                        text: heuristicMsg
+                    })
+                );
+                player.talkIndex = 0;
+                return;
+            }
+        }
+
+        if (!this.hasDialogue(text)) return;
 
         // Reset the talking index if we talk to a new NPC.
         if (player.npcTalk !== this.key) player.resetTalk(this.key);

@@ -14,6 +14,19 @@ import Client from '../network/client';
 import Events from '../controllers/events';
 
 import { pollWorldEvents, generateQuestFromEvent } from './narrative.engine';
+import {
+    HeuristicEngine,
+    Watchdog,
+    NationSystem,
+    SocialWaveSystem,
+    WorldGenerator,
+    WorldChat,
+    NPCMemory,
+    HNode,
+    NPCClass,
+    determineNPCClass,
+    getClassDefinition
+} from './arelogic';
 
 import config from '@kaetram/common/config';
 import log from '@kaetram/common/util/log';
@@ -56,6 +69,15 @@ export default class World {
     public client: Client;
     public events: Events;
 
+    // Are Logic Heuristic Systems
+    public heuristics: HeuristicEngine;
+    public watchdog: Watchdog;
+    public nationSystem: NationSystem;
+    public socialWave: SocialWaveSystem;
+    public worldGenerator: WorldGenerator;
+    public worldChat: WorldChat;
+    public npcMemories: globalThis.Map<string, NPCMemory> = new globalThis.Map();
+
     public discord: Discord = new Discord(config.hubEnabled);
 
     private maxPlayers = config.maxPlayers;
@@ -80,13 +102,48 @@ export default class World {
         this.client = new Client(this);
         this.events = new Events(this);
 
+        // Initialize Are Logic subsystems
+        this.heuristics = new HeuristicEngine();
+        this.watchdog = new Watchdog(this.heuristics);
+        this.nationSystem = new NationSystem(this.heuristics);
+        this.socialWave = new SocialWaveSystem(this.heuristics);
+        this.worldGenerator = new WorldGenerator(this.heuristics, this.nationSystem);
+        this.worldChat = new WorldChat(this.heuristics);
+
+        this.bootstrapNations();
+
         this.discord.onMessage(this.globalMessage.bind(this));
 
         this.onConnection(this.network.handleConnection.bind(this.network));
 
         log.info('******************************************');
+        log.info('Are Logic systems initialized: 6 axioms, 1 watchdog, 13 heuristic nodes.');
 
         this.tick();
+    }
+
+    /**
+     * Seed the world with initial nations and villages so players
+     * encounter a living political landscape from the start.
+     */
+    private bootstrapNations(): void {
+        const aynor = this.nationSystem.createNation('Kingdom of Aynor', '#4488ff');
+        this.nationSystem.createVillage('Aynor', aynor.id, 320, 880);
+        this.nationSystem.createVillage('Lakesworld', aynor.id, 400, 700);
+
+        const mudwich = this.nationSystem.createNation('Republic of Mudwich', '#44cc44');
+        this.nationSystem.createVillage('Mudwich', mudwich.id, 200, 600);
+        this.nationSystem.createVillage('Patsow', mudwich.id, 150, 500);
+
+        const crull = this.nationSystem.createNation('Crullfield Dominion', '#cc4444');
+        this.nationSystem.createVillage('Crullfield', crull.id, 500, 400);
+
+        // Initial diplomatic relations
+        this.nationSystem.setRelation(aynor.id, mudwich.id, 'alliance');
+        this.nationSystem.setRelation(aynor.id, crull.id, 'rivalry');
+        this.nationSystem.setRelation(mudwich.id, crull.id, 'neutral');
+
+        log.info(`Bootstrapped ${this.nationSystem.getAllNations().length} nations with ${this.nationSystem.getAllVillages().length} villages.`);
     }
 
     /**
@@ -102,29 +159,79 @@ export default class World {
 
         setInterval(() => this.save(), config.saveInterval);
 
-        // Are Logic AI Civilization Loop
-        setInterval(async () => {
-            // In a real implementation, we would load factions from DB
-            // For now, we simulate one faction for the demo
-            const demoFaction = { id: 'demo_faction', territory: 10, resources: 100, knowledge: 5, power: 10 };
-            
-            
-            // Broadcast heuristics to all players
-            
-
-            // Poll for world events
-            const events = pollWorldEvents();
-            events.forEach(event => {
-                this.globalMessage('World', event.description, '#ff9900', true);
-
-                const questData = generateQuestFromEvent(event);
-                if (questData) {
-                    this.entities.forEachPlayer((player: Player) => {
-                        player.quests.addDynamicQuest(event.id, questData);
-                    });
-                }
-            });
+        // Are Logic — civilization tick every 5 seconds
+        setInterval(() => {
+            this.heuristicTick();
         }, 5000);
+    }
+
+    /**
+     * The core Are Logic civilization loop.
+     * Processes heuristic waves, watchdog validation, political recursion,
+     * social waves, NPC memory decay, world events, and NPC chat.
+     */
+    private heuristicTick(): void {
+        // 1. Player activity feeds heuristic impulses
+        const population = this.getPopulation();
+        if (population > 0) {
+            this.heuristics.impulse(HNode.Social, population * 0.1);
+            this.heuristics.impulse(HNode.ConsumptionDemand, population * 0.05);
+        }
+
+        // 2. Propagate heuristic wave
+        this.heuristics.tick();
+
+        // 3. Watchdog enforces axioms
+        this.watchdog.validate();
+
+        // 4. Political recursion
+        this.nationSystem.tick();
+
+        // 5. Social wave propagation
+        this.socialWave.tick();
+
+        // 6. NPC memory decay
+        for (const [, memory] of this.npcMemories) {
+            memory.decay();
+        }
+
+        // 7. Poll for world events from narrative engine
+        const events = pollWorldEvents();
+        for (const event of events) {
+            this.globalMessage('World', event.description, '#ff9900', true);
+
+            const questData = generateQuestFromEvent(event);
+            if (questData) {
+                this.entities.forEachPlayer((player: Player) => {
+                    player.quests.addDynamicQuest(event.id, questData);
+                });
+            }
+        }
+
+        // 8. NPC world chat participation
+        const npcMemoryList = [...this.npcMemories.values()];
+        const npcMessage = this.worldChat.generateNPCChat(npcMemoryList);
+        if (npcMessage) {
+            this.push(Modules.PacketType.Broadcast, {
+                packet: new ChatPacket({
+                    source: `[World] ${npcMessage.source}`,
+                    message: npcMessage.message,
+                    colour: npcMessage.colour
+                })
+            });
+        }
+    }
+
+    /**
+     * Get or create NPC memory for a given NPC.
+     */
+    public getNPCMemory(npcId: string, npcName: string): NPCMemory {
+        let memory = this.npcMemories.get(npcId);
+        if (!memory) {
+            memory = new NPCMemory(npcId, npcName);
+            this.npcMemories.set(npcId, memory);
+        }
+        return memory;
     }
 
     /**

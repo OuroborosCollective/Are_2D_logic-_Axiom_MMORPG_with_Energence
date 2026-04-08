@@ -9,40 +9,53 @@ export interface WorldEvent {
 }
 
 /**
- * Generates dynamic world events based on heuristic thresholds.
- * H0: War, H1: Peace, H2: Trade, H3: Chaos, H4: Order, H5: Nature, H6: Magic, H7: Tech
+ * Generates dynamic world events. These are polled by the world tick
+ * and broadcast to all players. Events are rare — they only fire
+ * when heuristic thresholds are exceeded, which requires sustained
+ * player activity to push nodes high enough.
+ *
+ * For now events are generated probabilistically to seed the world
+ * with occasional activity. The full heuristic-driven version is in
+ * the AreLogic heuristicTick (world.ts) where real node values
+ * are checked.
  */
 export function pollWorldEvents(): WorldEvent[] {
     const events: WorldEvent[] = [];
 
-    if (([0,0,0,0,0,0,0,0])[ 0] > 70) {
-        events.push({
-            id: 'war_outbreak',
-            type: 'combat',
-            description: 'A major war has broken out between factions!',
-            intensity: ([0,0,0,0,0,0,0,0])[ 0],
-            duration: 3600 // 1 hour
-        });
-    }
-
-    if (([0,0,0,0,0,0,0,0])[ 2] > 80) {
-        events.push({
-            id: 'economic_boom',
-            type: 'economy',
-            description: 'The world is experiencing an economic golden age.',
-            intensity: ([0,0,0,0,0,0,0,0])[ 2],
-            duration: 1800
-        });
-    }
-
-    if (([0,0,0,0,0,0,0,0])[ 3] > 60 && ([0,0,0,0,0,0,0,0])[ 6] > 50) {
-        events.push({
-            id: 'magical_anomaly',
-            type: 'magic',
-            description: 'Chaos and Magic have combined to create unstable rifts.',
-            intensity: (([0,0,0,0,0,0,0,0])[ 3] + ([0,0,0,0,0,0,0,0])[ 6]) / 2,
-            duration: 900
-        });
+    // ~1% chance per tick to generate a random world event
+    if (Math.random() > 0.99) {
+        const templates = [
+            {
+                id: 'border_skirmish',
+                type: 'combat',
+                description: 'Border skirmishes have been reported between rival nations!',
+                intensity: 60,
+                duration: 1800
+            },
+            {
+                id: 'trade_caravan',
+                type: 'economy',
+                description: 'A grand trade caravan has arrived with exotic goods.',
+                intensity: 50,
+                duration: 900
+            },
+            {
+                id: 'ancient_discovery',
+                type: 'knowledge',
+                description: 'Scholars have uncovered ancient texts in nearby ruins.',
+                intensity: 45,
+                duration: 1200
+            },
+            {
+                id: 'harvest_festival',
+                type: 'social',
+                description: 'The villages are celebrating a bountiful harvest!',
+                intensity: 40,
+                duration: 600
+            }
+        ];
+        const template = templates[Math.floor(Math.random() * templates.length)];
+        events.push(template);
     }
 
     return events;
@@ -53,7 +66,7 @@ export function generateQuestFromEvent(event: WorldEvent): RawQuest | null {
         case 'combat':
             return {
                 name: 'Frontline Support',
-                description: `The war is escalating. ${event.description}`,
+                description: `The conflict is escalating. ${event.description}`,
                 rewards: [`${event.intensity * 10} Gold`],
                 stages: {
                     0: {
@@ -64,10 +77,10 @@ export function generateQuestFromEvent(event: WorldEvent): RawQuest | null {
                     },
                     1: {
                         task: 'kill',
-                        mob: ['rat', 'skeleton', 'hellhound'], // Generic enemies for the war
+                        mob: ['rat', 'skeleton', 'hellhound'],
                         mobCountRequirement: Math.floor(event.intensity / 5),
-                        text: ['Kill the enemies of the state!'],
-                        completedText: ['You have served your country well.']
+                        text: ['Defeat the enemies threatening our borders!'],
+                        completedText: ['You have served your nation well.']
                     },
                     2: {
                         task: 'talk',
@@ -80,18 +93,18 @@ export function generateQuestFromEvent(event: WorldEvent): RawQuest | null {
         case 'economy':
             return {
                 name: 'Merchant Run',
-                description: `Profit is in the air. ${event.description}`,
+                description: `Opportunity knocks. ${event.description}`,
                 rewards: [`${event.intensity * 15} Gold`],
                 stages: {
                     0: {
                         task: 'talk',
                         npc: 'merchant',
                         text: [`Greetings! ${event.description} I have a special delivery for you.`],
-                        completedText: ['Deliver the goods to the other merchant.']
+                        completedText: ['Deliver the goods to the guard outpost.']
                     },
                     1: {
                         task: 'talk',
-                        npc: 'guard', // Let's say the guard is the recipient for now
+                        npc: 'guard',
                         text: ['Ah, the delivery from the merchant. Thank you.'],
                         itemRewards: [{ key: 'gold', count: event.intensity * 15 }]
                     }

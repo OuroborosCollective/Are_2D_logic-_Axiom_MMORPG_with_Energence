@@ -1,47 +1,46 @@
-
 /**
- * Updates the ecological state of a tile or region based on heuristics.
- * H0: War, H1: Peace, H2: Trade, H3: Chaos, H4: Order, H5: Nature, H6: Magic, H7: Tech
+ * Updates the ecological state based on heuristic node values.
+ * @param heuristicNodes Array of 13 heuristic node values [0-100].
  */
-export function getSpawnModifier(mobType: string): number {
+
+export function getSpawnModifier(
+    mobType: string,
+    heuristicNodes: number[] = new Array(13).fill(50)
+): number {
     let modifier = 1.0;
+    const nature = (heuristicNodes[0] ?? 50) / 100;
+    const war = (heuristicNodes[10] ?? 50) / 100;
+    const peace = (heuristicNodes[8] ?? 50) / 100;
+    const chaos = (heuristicNodes[6] ?? 50) / 100;
+    const order = (heuristicNodes[9] ?? 50) / 100;
 
-    // Nature (H5) increases all natural spawns
-    modifier += (([0,0,0,0,0,0,0,0])[ 5] * 0.1);
+    modifier += nature * 0.1;
 
-    // War (H0) increases aggressive mob spawns
     if (mobType === 'aggressive') {
-        modifier += (([0,0,0,0,0,0,0,0])[ 0] * 0.2);
+        modifier += war * 0.2;
+        modifier -= peace * 0.1;
     }
 
-    // Peace (H1) decreases aggressive mob spawns
-    if (mobType === 'aggressive') {
-        modifier -= (([0,0,0,0,0,0,0,0])[ 1] * 0.1);
-    }
-
-    // Chaos (H3) makes spawns more erratic/frequent
-    modifier += (([0,0,0,0,0,0,0,0])[ 3] * 0.15);
-
-    // Order (H4) stabilizes spawns
-    modifier -= (([0,0,0,0,0,0,0,0])[ 4] * 0.05);
+    modifier += chaos * 0.15;
+    modifier -= order * 0.05;
 
     return Math.max(0.1, modifier);
 }
 
-export function getResourceYieldModifier(resourceType: string): number {
+export function getResourceYieldModifier(
+    _resourceType: string,
+    heuristicNodes: number[] = new Array(13).fill(50)
+): number {
     let modifier = 1.0;
+    const nature = (heuristicNodes[0] ?? 50) / 100;
+    const tech = (heuristicNodes[12] ?? 50) / 100;
+    const war = (heuristicNodes[10] ?? 50) / 100;
+    const chaos = (heuristicNodes[6] ?? 50) / 100;
 
-    // Nature (H5) increases yields
-    modifier += (([0,0,0,0,0,0,0,0])[ 5] * 0.15);
-
-    // Tech (H7) increases yields (efficiency)
-    modifier += (([0,0,0,0,0,0,0,0])[ 7] * 0.1);
-
-    // War (H0) decreases yields (destruction)
-    modifier -= (([0,0,0,0,0,0,0,0])[ 0] * 0.1);
-
-    // Chaos (H3) makes yields unpredictable
-    modifier += (Math.random() - 0.5) * (([0,0,0,0,0,0,0,0])[ 3] * 0.2);
+    modifier += nature * 0.15;
+    modifier += tech * 0.1;
+    modifier -= war * 0.1;
+    modifier += (Math.random() - 0.5) * chaos * 0.2;
 
     return Math.max(0.1, modifier);
 }
