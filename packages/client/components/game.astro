@@ -78,6 +78,82 @@
             <div id="close-in-app-store" class="close-container-fancy"></div>
         </div>
 
+        <!-- Premium Shop -->
+        <div id="premium-shop" class="slice-container">
+            <div id="close-premium-shop" class="close"></div>
+            <div id="premium-shop-content">
+                <div id="premium-banner">
+                    <div id="premium-banner-crown">&#x1F451;</div>
+                    <h2 id="premium-banner-title">AreAxiomian Premium</h2>
+                    <p id="premium-banner-subtitle">Unlock the full power of the world</p>
+                </div>
+
+                <div id="premium-status-bar">
+                    <span id="premium-status-text">Free Account</span>
+                    <span id="premium-status-badge"></span>
+                </div>
+
+                <div id="premium-benefits">
+                    <div class="premium-benefit">
+                        <div class="benefit-icon">⚡</div>
+                        <div class="benefit-info">
+                            <div class="benefit-title">150% XP Boost</div>
+                            <div class="benefit-desc">Earn 50% more experience on every action</div>
+                        </div>
+                    </div>
+                    <div class="premium-benefit">
+                        <div class="benefit-icon">🏠</div>
+                        <div class="benefit-info">
+                            <div class="benefit-title">Player Housing</div>
+                            <div class="benefit-desc">Own and customize your personal house</div>
+                        </div>
+                    </div>
+                    <div class="premium-benefit">
+                        <div class="benefit-icon">🎨</div>
+                        <div class="benefit-info">
+                            <div class="benefit-title">Custom Textures</div>
+                            <div class="benefit-desc">Upload your own character &amp; house designs</div>
+                        </div>
+                    </div>
+                    <div class="premium-benefit">
+                        <div class="benefit-icon">👑</div>
+                        <div class="benefit-info">
+                            <div class="benefit-title">Premium Badge</div>
+                            <div class="benefit-desc">Gold name &amp; exclusive [Premium] title</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="premium-purchase">
+                    <div id="premium-price">€9.99</div>
+                    <button id="premium-buy-btn" class="slice-button stroke">
+                        &#x1F6D2; Purchase Premium
+                    </button>
+                </div>
+
+                <div id="premium-housing-section" style="display:none;">
+                    <h3>Your House</h3>
+                    <div id="premium-house-info"></div>
+                    <button id="premium-create-house" class="slice-button stroke">🏠 Create House</button>
+                    <div id="premium-texture-section">
+                        <h3>Custom Textures</h3>
+                        <div id="premium-texture-list"></div>
+                        <button id="premium-upload-texture" class="slice-button stroke">🎨 Upload Texture</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Premium Banner for non-premium players (shown periodically) -->
+        <div id="premium-teaser" style="display:none;">
+            <div id="premium-teaser-content">
+                <span id="premium-teaser-icon">👑</span>
+                <span id="premium-teaser-text">Get <b>150% XP</b>, Housing &amp; Custom Skins!</span>
+                <button id="premium-teaser-btn">Go Premium</button>
+                <span id="premium-teaser-close">✕</span>
+            </div>
+        </div>
+
         <div id="player-info">
             <div id="health" class="safari-only">
                 <div id="health-mask" class="health-mask-base"></div>
@@ -97,6 +173,7 @@
             <li><div id="profile-button"></div></li>
             <li><div id="friends-button"></div></li>
             <li><div id="chat-button"></div></li>
+            <li><div id="premium-button"></div></li>
             <li><div id="settings-button"></div></li>
         </ul>
 
