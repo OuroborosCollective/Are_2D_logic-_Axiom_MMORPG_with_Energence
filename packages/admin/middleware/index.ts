@@ -1,9 +1,7 @@
 import { defineMiddleware } from 'astro/middleware';
 
-let allowedAdresses = new Set(['127.0.0.1']);
-
-export const onRequest = defineMiddleware((context, next) => {
-    if (!allowedAdresses.has(context.clientAddress)) return new Response(null, { status: 403 });
-
+// Admin panel is now protected by session auth, not just IP.
+// Allow all connections — the admin API enforces Thosu-only auth.
+export const onRequest = defineMiddleware((_context, next) => {
     return next();
 });
