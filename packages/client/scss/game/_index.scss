@@ -34,6 +34,7 @@
 @use 'impl/zoom';
 @use 'impl/quest';
 @use 'impl/inappstore';
+@use 'impl/premium';
 
 body.game {
     background: #000;

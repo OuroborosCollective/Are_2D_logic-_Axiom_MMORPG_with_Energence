@@ -20,6 +20,7 @@ import Crafting from '../menu/crafting';
 import LootBag from '../menu/lootbag';
 import Welcome from '../menu/welcome';
 import Quest from '../menu/quest';
+import Premium from '../menu/premium';
 
 import { Modules, Opcodes, Packets } from '@kaetram/common/network';
 
@@ -49,6 +50,7 @@ export default class MenuController {
     private lootBag: LootBag;
     private welcome: Welcome;
     private quest: Quest;
+    private premium: Premium;
 
     public header: Header;
 
@@ -75,6 +77,7 @@ export default class MenuController {
         this.lootBag = new LootBag(this.inventory);
         this.welcome = new Welcome(game);
         this.quest = new Quest(game.player);
+        this.premium = new Premium(game);
 
         this.menus = {
             inventory: this.inventory,
@@ -96,7 +99,8 @@ export default class MenuController {
             crafting: this.crafting,
             lootBag: this.lootBag,
             welcome: this.welcome,
-            quest: this.quest
+            quest: this.quest,
+            premium: this.premium
         };
 
         this.inventory.onSelect(this.handleInventorySelect.bind(this));

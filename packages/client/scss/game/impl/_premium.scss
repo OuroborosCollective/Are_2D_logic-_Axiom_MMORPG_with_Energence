@@ -1,0 +1,257 @@
+/* Premium Shop & Teaser Banner */
+
+#premium-shop {
+    display: none;
+    width: 26em;
+    min-height: 22em;
+    margin: auto;
+    flex-direction: column;
+    z-index: 15;
+}
+
+#premium-shop-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    padding: 0.5em;
+    overflow-y: auto;
+    max-height: 70vh;
+}
+
+#premium-banner {
+    text-align: center;
+    padding: 1em 0.5em;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.1));
+    border-radius: 8px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+#premium-banner-crown {
+    font-size: 2.5em;
+    line-height: 1;
+    text-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+}
+
+#premium-banner-title {
+    font-size: 1.3em;
+    color: #ffd700;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    margin: 0.2em 0;
+}
+
+#premium-banner-subtitle {
+    font-size: 0.8em;
+    color: #ddd;
+    opacity: 0.8;
+}
+
+#premium-status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4em 0.8em;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    font-size: 0.85em;
+}
+
+#premium-status-text {
+    color: #aaa;
+}
+
+#premium-status-badge {
+    font-size: 0.75em;
+    padding: 0.15em 0.5em;
+    border-radius: 4px;
+}
+
+.premium-active #premium-status-text {
+    color: #ffd700;
+}
+
+.premium-active #premium-status-badge {
+    background: rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+}
+
+#premium-benefits {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+}
+
+.premium-benefit {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    padding: 0.5em 0.6em;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: background 0.2s;
+}
+
+.premium-benefit:hover {
+    background: rgba(255, 215, 0, 0.08);
+    border-color: rgba(255, 215, 0, 0.2);
+}
+
+.benefit-icon {
+    font-size: 1.5em;
+    width: 2em;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.benefit-title {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #eee;
+}
+
+.benefit-desc {
+    font-size: 0.75em;
+    color: #999;
+}
+
+#premium-purchase {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
+    padding: 0.8em;
+    margin-top: 0.3em;
+}
+
+#premium-price {
+    font-size: 1.6em;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+#premium-buy-btn {
+    font-size: 1em;
+    padding: 0.5em 1.2em;
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: #1a1a1a;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    text-shadow: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 10px rgba(255, 193, 7, 0.3);
+}
+
+#premium-buy-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(255, 193, 7, 0.5);
+}
+
+#premium-housing-section {
+    padding: 0.6em;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 0.3em;
+}
+
+#premium-housing-section h3 {
+    font-size: 0.95em;
+    color: #ffd700;
+    margin-bottom: 0.4em;
+}
+
+#premium-texture-section {
+    margin-top: 0.6em;
+}
+
+#premium-texture-section h3 {
+    font-size: 0.85em;
+    color: #ddd;
+    margin-bottom: 0.3em;
+}
+
+/* Premium Button in action bar */
+#premium-button {
+    background-image: url('/img/ui/premium-icon.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+#premium-button::after {
+    content: '👑';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* Teaser Banner for non-premium players */
+#premium-teaser {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    pointer-events: auto;
+}
+
+#premium-teaser-content {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    padding: 0.5em 1em;
+    background: linear-gradient(135deg, rgba(30, 25, 10, 0.95), rgba(50, 40, 15, 0.95));
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.2), 0 0 40px rgba(255, 215, 0, 0.1);
+    animation: premiumPulse 3s ease-in-out infinite;
+}
+
+@keyframes premiumPulse {
+    0%, 100% { border-color: rgba(255, 215, 0, 0.5); }
+    50% { border-color: rgba(255, 215, 0, 0.9); }
+}
+
+#premium-teaser-icon {
+    font-size: 1.5em;
+}
+
+#premium-teaser-text {
+    font-size: 0.85em;
+    color: #eee;
+}
+
+#premium-teaser-text b {
+    color: #ffd700;
+}
+
+#premium-teaser-btn {
+    padding: 0.3em 0.8em;
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: #1a1a1a;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.8em;
+    white-space: nowrap;
+}
+
+#premium-teaser-btn:hover {
+    transform: scale(1.05);
+}
+
+#premium-teaser-close {
+    cursor: pointer;
+    color: #888;
+    font-size: 1em;
+    padding: 0.2em;
+}
+
+#premium-teaser-close:hover {
+    color: #fff;
+}
