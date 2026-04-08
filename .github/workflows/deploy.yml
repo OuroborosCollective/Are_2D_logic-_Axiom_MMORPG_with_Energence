@@ -1,0 +1,29 @@
+name: Deploy Kaetram-Open to VPS
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: 46.202.154.25
+          username: root
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            cd /var/www/Kaetram
+            git pull origin develop || (rm -rf /var/www/Kaetram/* && git clone https://github.com/OuroborosCollective/Kaetram-Open.git .)
+            corepack enable
+            yarn set version 4.13.0
+            yarn install
+            yarn build
+            pm2 restart kaetram-server || pm2 start packages/server/dist/main.js --name kaetram-server
+            systemctl reload nginx
+            
