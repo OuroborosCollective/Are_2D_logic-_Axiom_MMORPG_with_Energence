@@ -1,0 +1,220 @@
+/* Mobile & Tablet Optimized Layout */
+@use '../../abstracts/media';
+
+/* ─── Small screens (phones, ≤1000px) ─── */
+@media (--sm) {
+    #buttons {
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 0;
+        gap: 0.15em;
+        padding: 0.15em;
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 8px 8px 0 0;
+        flex-wrap: wrap;
+        justify-content: center;
+        max-width: 100vw;
+    }
+
+    #player-info {
+        top: 0.3em !important;
+        left: 0.3em !important;
+        transform: scale(0.85);
+        transform-origin: top left;
+    }
+
+    .slice-container,
+    .slice-container-fancy {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        max-height: 85vh !important;
+        font-size: 0.85em;
+    }
+
+    .slice-page {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        bottom: 4.5em !important;
+        font-size: 0.85em;
+    }
+
+    #chat {
+        width: 90vw !important;
+        left: 5vw !important;
+        bottom: 4.5em !important;
+        font-size: 0.8em;
+    }
+
+    #chat-input {
+        font-size: 16px; /* prevents iOS zoom on focus */
+    }
+
+    #premium-shop {
+        width: 95vw !important;
+        max-height: 80vh !important;
+    }
+
+    #premium-teaser {
+        bottom: 5em !important;
+        left: 5% !important;
+        right: 5% !important;
+        transform: none !important;
+    }
+
+    #premium-teaser-content {
+        font-size: 0.85em;
+    }
+
+    /* Vote menu */
+    #vote-menu {
+        width: 95vw !important;
+        max-height: 80vh !important;
+    }
+}
+
+/* ─── Portrait phones ─── */
+@media (--portrait) {
+    #buttons {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.1em;
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 0;
+        padding: 0.2em 0.3em;
+        background: rgba(0, 0, 0, 0.45);
+        border-radius: 8px 8px 0 0;
+    }
+
+    #joystick {
+        bottom: 5em;
+        left: 1em;
+        opacity: 0.65;
+    }
+
+    #zoom-buttons {
+        bottom: 5em !important;
+        right: 0.3em !important;
+    }
+
+    #ability-shortcut {
+        bottom: 5em !important;
+    }
+
+    #premium-shop-content {
+        max-height: 65vh;
+    }
+
+    .premium-benefit {
+        padding: 0.35em 0.4em;
+    }
+
+    .benefit-icon {
+        font-size: 1.2em;
+    }
+}
+
+/* ─── Tablet (640px–1000px) ─── */
+@media only screen and (min-width: 640px) and (max-width: 1000px) {
+    #buttons {
+        font-size: 0.9em;
+        gap: 0.2em;
+    }
+
+    .slice-container,
+    .slice-container-fancy {
+        max-width: 80vw !important;
+    }
+
+    .slice-page {
+        max-width: 80vw !important;
+    }
+
+    #premium-shop {
+        width: 70vw !important;
+        max-width: 500px !important;
+    }
+}
+
+/* ─── Touch device optimizations ─── */
+@media (pointer: coarse) {
+    /* Larger touch targets for buttons */
+    #buttons li div {
+        min-width: 36px;
+        min-height: 36px;
+    }
+
+    .slice-button,
+    .slice-tab {
+        min-height: 40px;
+        padding: 0.5em 1em;
+    }
+
+    /* Larger close buttons */
+    .close,
+    .close-container-fancy {
+        min-width: 32px;
+        min-height: 32px;
+    }
+
+    /* Premium shop touch optimization */
+    #premium-buy-btn {
+        min-height: 48px;
+        font-size: 1.1em;
+    }
+
+    .premium-benefit {
+        min-height: 48px;
+    }
+
+    /* Vote banner touch targets */
+    .vote-banner {
+        min-height: 60px;
+    }
+
+    .vote-btn {
+        min-height: 44px;
+        padding: 0.5em 1em;
+    }
+}
+
+/* ─── Landscape phone (short height) ─── */
+@media only screen and (max-height: 500px) {
+    #buttons {
+        font-size: 0.75em;
+    }
+
+    #player-info {
+        transform: scale(0.7);
+        transform-origin: top left;
+    }
+
+    #joystick {
+        bottom: 0.5em;
+        left: 0.5em;
+        transform: scale(0.7);
+    }
+
+    .slice-container,
+    .slice-container-fancy {
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+    }
+}
+
+/* ─── Safe area insets (notched phones) ─── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    #buttons {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    #joystick {
+        bottom: calc(2.5em + env(safe-area-inset-bottom));
+    }
+
+    #chat {
+        bottom: calc(3em + env(safe-area-inset-bottom));
+    }
+}

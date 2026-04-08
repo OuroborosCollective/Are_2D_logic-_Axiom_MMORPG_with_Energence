@@ -16,6 +16,7 @@
  */
 
 const API_BASE = `http://${globalConfig.host}:${globalConfig.apiEnabled ? globalConfig.apiPort : 9002}/admin`;
+const PREMIUM_API = `http://${globalConfig.host}:${globalConfig.apiEnabled ? globalConfig.apiPort : 9002}/premium`;
 
 let authToken = '';
 
@@ -39,6 +40,7 @@ const NAV_ITEMS = [
     { id: 'performance', label: '⚡ Performance', icon: '⚡' },
     { id: 'errors', label: '🐛 Error Log', icon: '🐛' },
     { id: 'audit', label: '📋 Audit Log', icon: '📋' },
+    { id: 'voting', label: '🗳️ Vote/Toplists', icon: '🗳️' },
 ];
 
 // ─── API HELPERS ──────────────────────────────────────────────────
@@ -192,6 +194,7 @@ class AdminApp {
             case 'performance': return this.renderPerformance(container);
             case 'errors': return this.renderErrors(container);
             case 'audit': return this.renderAudit(container);
+            case 'voting': return this.renderVoting(container);
         }
     }
 
@@ -780,6 +783,107 @@ class AdminApp {
                 </table>`}
             </div>
         `);
+    }
+    // ─── VOTING / TOPLIST MANAGEMENT ─────────────────────────────
+    private async renderVoting(el: HTMLElement) {
+        const data = await fetch(`${PREMIUM_API}/vote/admin/sites`, {
+            headers: { Authorization: `Bearer ${authToken}` }
+        }).then(r => r.json()).catch(() => null);
+
+        const sites = data?.sites || [];
+        const stats = data?.stats || {};
+
+        html(el, `
+            <h1 style="margin-bottom:20px;">Vote / Toplist Management</h1>
+            <div class="grid grid-3 mb-4">
+                <div class="card"><div class="stat-value">${stats.totalSites || 0}</div><div class="stat-label">Vote Sites</div></div>
+                <div class="card"><div class="stat-value">${stats.totalVotes || 0}</div><div class="stat-label">Total Votes</div></div>
+                <div class="card"><div class="stat-value">${stats.votesLast24h || 0}</div><div class="stat-label">Votes (24h)</div></div>
+            </div>
+
+            <div class="card mb-4">
+                <h3>Add New Toplist Banner</h3>
+                <div class="grid grid-2" style="gap:8px; margin-bottom:12px;">
+                    <input id="vote-name" placeholder="Site name (e.g. GTOP100)" />
+                    <input id="vote-url" placeholder="Voting URL (https://...)" />
+                    <input id="vote-banner" placeholder="Banner image URL (468x60)" />
+                    <div class="flex" style="gap:8px;">
+                        <input id="vote-width" placeholder="Width" value="468" style="width:80px;" />
+                        <input id="vote-height" placeholder="Height" value="60" style="width:80px;" />
+                        <input id="vote-premium-hours" placeholder="Premium hrs" value="2" style="width:100px;" />
+                        <input id="vote-currency" placeholder="Currency" value="50" style="width:80px;" />
+                    </div>
+                </div>
+                <button onclick="window._addVoteSite()">+ Add Toplist Site</button>
+            </div>
+
+            <div class="card">
+                <h3>Active Toplist Banners</h3>
+                ${sites.length === 0 ? '<p class="text-muted">No vote sites configured. Add one above.</p>' : `
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    ${sites.map((s: any) => `
+                        <div style="border:1px solid var(--border); border-radius:8px; padding:12px;">
+                            <div class="flex-between mb-4">
+                                <div>
+                                    <strong>${s.name}</strong>
+                                    <span class="badge ${s.enabled ? 'success' : 'danger'}" style="margin-left:8px;">${s.enabled ? 'Active' : 'Disabled'}</span>
+                                </div>
+                                <div class="flex">
+                                    <button style="font-size:12px; padding:4px 8px;" onclick="window._toggleVoteSite('${s.id}', ${!s.enabled})">${s.enabled ? 'Disable' : 'Enable'}</button>
+                                    <button class="danger" style="font-size:12px; padding:4px 8px;" onclick="window._removeVoteSite('${s.id}')">Remove</button>
+                                </div>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <img src="${s.bannerUrl}" alt="${s.name}" style="max-width:100%; height:auto; border-radius:4px; border:1px solid var(--border);" onerror="this.style.display='none'" />
+                            </div>
+                            <table style="font-size:12px;">
+                                <tr><td class="text-muted">URL</td><td><a href="${s.url}" target="_blank">${s.url}</a></td></tr>
+                                <tr><td class="text-muted">Banner</td><td>${s.bannerWidth}x${s.bannerHeight}</td></tr>
+                                <tr><td class="text-muted">Reward</td><td>${s.rewardPremiumHours}h Premium + ${s.rewardCurrency} Currency</td></tr>
+                                <tr><td class="text-muted">Sort Order</td><td>${s.sortOrder}</td></tr>
+                            </table>
+                        </div>
+                    `).join('')}
+                </div>`}
+            </div>
+        `);
+
+        (window as any)._addVoteSite = async () => {
+            const name = ($('#vote-name') as HTMLInputElement)?.value;
+            const url = ($('#vote-url') as HTMLInputElement)?.value;
+            const bannerUrl = ($('#vote-banner') as HTMLInputElement)?.value;
+            const bannerWidth = parseInt(($('#vote-width') as HTMLInputElement)?.value) || 468;
+            const bannerHeight = parseInt(($('#vote-height') as HTMLInputElement)?.value) || 60;
+            const rewardPremiumHours = parseInt(($('#vote-premium-hours') as HTMLInputElement)?.value) || 2;
+            const rewardCurrency = parseInt(($('#vote-currency') as HTMLInputElement)?.value) || 50;
+
+            if (!name || !url || !bannerUrl) { alert('Name, URL, and Banner URL are required.'); return; }
+
+            await fetch(`${PREMIUM_API}/vote/admin/sites`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+                body: JSON.stringify({ name, url, bannerUrl, bannerWidth, bannerHeight, rewardPremiumHours, rewardCurrency })
+            });
+            this.showPanel('voting');
+        };
+
+        (window as any)._toggleVoteSite = async (id: string, enabled: boolean) => {
+            await fetch(`${PREMIUM_API}/vote/admin/sites/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+                body: JSON.stringify({ enabled })
+            });
+            this.showPanel('voting');
+        };
+
+        (window as any)._removeVoteSite = async (id: string) => {
+            if (!confirm('Remove this toplist site?')) return;
+            await fetch(`${PREMIUM_API}/vote/admin/sites/${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${authToken}` }
+            });
+            this.showPanel('voting');
+        };
     }
 }
 

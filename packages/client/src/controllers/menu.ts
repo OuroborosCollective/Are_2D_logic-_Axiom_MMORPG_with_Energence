@@ -21,6 +21,7 @@ import LootBag from '../menu/lootbag';
 import Welcome from '../menu/welcome';
 import Quest from '../menu/quest';
 import Premium from '../menu/premium';
+import Vote from '../menu/vote';
 
 import { Modules, Opcodes, Packets } from '@kaetram/common/network';
 
@@ -51,6 +52,7 @@ export default class MenuController {
     private welcome: Welcome;
     private quest: Quest;
     private premium: Premium;
+    private vote: Vote;
 
     public header: Header;
 
@@ -78,6 +80,7 @@ export default class MenuController {
         this.welcome = new Welcome(game);
         this.quest = new Quest(game.player);
         this.premium = new Premium(game);
+        this.vote = new Vote(game);
 
         this.menus = {
             inventory: this.inventory,
@@ -100,7 +103,8 @@ export default class MenuController {
             lootBag: this.lootBag,
             welcome: this.welcome,
             quest: this.quest,
-            premium: this.premium
+            premium: this.premium,
+            vote: this.vote
         };
 
         this.inventory.onSelect(this.handleInventorySelect.bind(this));

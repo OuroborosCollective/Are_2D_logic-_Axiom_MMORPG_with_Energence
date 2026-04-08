@@ -40,6 +40,19 @@ import {
 import { validateSession } from '../admin/auth';
 import { logAudit } from '../admin/audit';
 
+import {
+    addVoteSite,
+    updateVoteSite,
+    removeVoteSite,
+    getVoteSites,
+    getAllVoteSites,
+    canVote as canVoteCheck,
+    recordVote,
+    claimVoteReward,
+    getPlayerVoteStatus,
+    getVoteStats
+} from './voting';
+
 import log from '@kaetram/common/util/log';
 import { Modules } from '@kaetram/common/network';
 
@@ -276,6 +289,130 @@ export default function createPremiumRouter(world: World): Router {
             texture,
             message: 'Texture uploaded. Pending admin approval before going live.'
         });
+    });
+
+    // ─── VOTE: Public — Get Sites ──────────────────────────────────
+    router.get('/vote/sites', (_req: Request, res: Response) => {
+        res.json(getVoteSites());
+    });
+
+    // ─── VOTE: Player Status ─────────────────────────────────────
+    router.get('/vote/status/:username', (req: Request, res: Response) => {
+        res.json(getPlayerVoteStatus(req.params.username));
+    });
+
+    // ─── VOTE: Record Vote ───────────────────────────────────────
+    router.post('/vote/record', (req: Request, res: Response) => {
+        const { username, siteId } = req.body || {};
+        if (!username || !siteId) {
+            res.status(400).json({ error: 'username and siteId required.' });
+            return;
+        }
+
+        if (!canVoteCheck(username, siteId)) {
+            res.status(429).json({ error: 'Vote cooldown active. Try again later.' });
+            return;
+        }
+
+        recordVote(username, siteId);
+        res.json({ success: true, message: 'Vote recorded! Click Claim to receive your reward.' });
+    });
+
+    // ─── VOTE: Claim Reward ──────────────────────────────────────
+    router.post('/vote/claim', (req: Request, res: Response) => {
+        const { username, siteId } = req.body || {};
+        if (!username || !siteId) {
+            res.status(400).json({ error: 'username and siteId required.' });
+            return;
+        }
+
+        const result = claimVoteReward(username, siteId);
+        if (!result.success) {
+            res.status(400).json({ error: result.error });
+            return;
+        }
+
+        // Apply temporary premium (in-memory flag)
+        const premData = getPremiumData(username);
+        if (!premData.isPremium) {
+            premData.isPremium = true;
+            premData.activatedAt = Date.now();
+            // Schedule premium expiry
+            setTimeout(() => {
+                const data = getPremiumData(username);
+                if (data.paypalOrderId) return; // Paid premium — don't expire
+                data.isPremium = false;
+            }, result.premiumHours * 60 * 60 * 1000);
+        }
+
+        // Notify online player
+        const player = world.getPlayerByName(username);
+        if (player) {
+            player.notify(
+                `Vote reward: ${result.premiumHours}h Premium + ${result.currency} gold!`,
+                '#ffd700'
+            );
+        }
+
+        res.json({
+            success: true,
+            premiumHours: result.premiumHours,
+            currency: result.currency,
+            message: `Claimed: ${result.premiumHours}h premium + ${result.currency} currency!`
+        });
+    });
+
+    // ─── ADMIN: Vote Site Management ─────────────────────────────
+    router.get('/vote/admin/sites', (req: Request, res: Response) => {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        if (!token || !validateSession(token)) {
+            res.status(401).json({ error: 'Admin auth required.' });
+            return;
+        }
+        res.json({ sites: getAllVoteSites(), stats: getVoteStats() });
+    });
+
+    router.post('/vote/admin/sites', (req: Request, res: Response) => {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        if (!token || !validateSession(token)) {
+            res.status(401).json({ error: 'Admin auth required.' });
+            return;
+        }
+
+        const { name, url, bannerUrl, bannerWidth, bannerHeight, rewardPremiumHours, rewardCurrency } = req.body || {};
+        if (!name || !url || !bannerUrl) {
+            res.status(400).json({ error: 'name, url, bannerUrl required.' });
+            return;
+        }
+
+        const site = addVoteSite(name, url, bannerUrl, bannerWidth, bannerHeight, rewardPremiumHours, rewardCurrency);
+        logAudit('vote_site_add', 'content', `Added vote site: ${name} (${url})`, req.ip || 'unknown');
+        res.json({ success: true, site });
+    });
+
+    router.put('/vote/admin/sites/:id', (req: Request, res: Response) => {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        if (!token || !validateSession(token)) {
+            res.status(401).json({ error: 'Admin auth required.' });
+            return;
+        }
+
+        const site = updateVoteSite(req.params.id, req.body);
+        if (!site) { res.status(404).json({ error: 'Site not found.' }); return; }
+        logAudit('vote_site_update', 'content', `Updated vote site: ${site.name}`, req.ip || 'unknown');
+        res.json({ success: true, site });
+    });
+
+    router.delete('/vote/admin/sites/:id', (req: Request, res: Response) => {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        if (!token || !validateSession(token)) {
+            res.status(401).json({ error: 'Admin auth required.' });
+            return;
+        }
+
+        const result = removeVoteSite(req.params.id);
+        logAudit('vote_site_remove', 'content', `Removed vote site: ${req.params.id}`, req.ip || 'unknown');
+        res.json({ success: result });
     });
 
     return router;

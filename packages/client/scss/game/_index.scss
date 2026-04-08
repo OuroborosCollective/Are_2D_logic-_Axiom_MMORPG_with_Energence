@@ -35,6 +35,8 @@
 @use 'impl/quest';
 @use 'impl/inappstore';
 @use 'impl/premium';
+@use 'impl/mobile';
+@use 'impl/vote';
 
 body.game {
     background: #000;
